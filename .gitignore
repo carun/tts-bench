@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+# Generated audio for the whole corpus (56 utterances x 6 configurations).
+# data/samples/ IS committed -- the handful of files the write-up points at.
+out/
