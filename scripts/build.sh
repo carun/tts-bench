@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 podman build -t tts-bench-base:latest -f containers/base.Containerfile .
-for i in kokoro qwen nemo; do
+for i in kokoro qwen nemo chatterbox; do
   podman build -t "tts-bench-$i:latest" -f "containers/$i.Containerfile" .
 done
-echo "built: tts-bench-{base,kokoro,qwen,nemo}"
+echo "built: tts-bench-{base,kokoro,qwen,nemo,chatterbox}"

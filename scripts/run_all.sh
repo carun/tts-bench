@@ -17,4 +17,8 @@ echo "### magpie (+ text normalisation)"
 "${RUN[@]}" tts-bench-nemo:latest   python /engines/run_magpie.py --tn
 echo "### qwen3-tts"
 "${RUN[@]}" tts-bench-qwen:latest   python /engines/run_qwen.py
+echo "### chatterbox (original, 0.5B)"
+"${RUN[@]}" tts-bench-chatterbox:latest python /engines/run_chatterbox.py --variant original
+echo "### chatterbox (turbo, 350M)"
+"${RUN[@]}" tts-bench-chatterbox:latest python /engines/run_chatterbox.py --variant turbo
 echo "### sweep complete"
