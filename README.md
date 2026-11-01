@@ -1,6 +1,6 @@
 # tts-bench
 
-Intelligibility and speed benchmark for four open text-to-speech engines, run
+Intelligibility and speed benchmark for five open text-to-speech engines, run
 on an NVIDIA GB10 (Grace Blackwell, arm64, compute capability 12.1).
 
 [Four open TTS engines on a GB10](https://arunc.dev/essays/four-open-tts-engines-on-a-gb10/).
@@ -9,10 +9,16 @@ on an NVIDIA GB10 (Grace Blackwell, arm64, compute capability 12.1).
 |---|---|---|---|---|
 | [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) | 82M | 0.0126 | 707 MiB | **2.3%** |
 | [Qwen3-TTS 0.6B](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice) | 0.6B | 0.588 | 2301 MiB | 4.1% |
+| [Chatterbox](https://huggingface.co/ResembleAI/chatterbox) | 0.5B | 0.483 | 3237 MiB | 4.1% |
+| [Chatterbox Turbo](https://huggingface.co/ResembleAI/chatterbox-turbo) | 350M | 0.252 | 2897 MiB | 4.5% |
 | [MagpieTTS 357M](https://huggingface.co/nvidia/magpie_tts_multilingual_357m) | 357M | 0.412 | 2345 MiB | 7.0% |
 | NeMo FastPitch + HiFiGAN | 140M | 0.0085 | 729 MiB | 7.8% |
 
-Chatterbox was excluded: it pins `torch==2.6.0`, which has no Blackwell kernels.
+Chatterbox was added on 2026-11-01. It pins `torch==2.6.0`, which has no
+Blackwell kernels, so it is installed `--no-deps` over the shared torch with
+every other pin honoured; see `containers/chatterbox.Containerfile`. A same-day
+rerun of Kokoro and Qwen (`data/recheck/`) landed within 3% of the September
+RTFs, so its timings sit in the same table.
 
 ## How it works
 
@@ -42,7 +48,7 @@ phoneme-level forced alignment or human raters.
 Requires podman with the NVIDIA CDI hook, and a CUDA GPU.
 
 ```bash
-./scripts/build.sh        # three engine images over one shared torch base
+./scripts/build.sh        # four engine images over one shared torch base
 ./scripts/run_all.sh      # synthesise the corpus with every engine
 ./scripts/judge_all.sh    # transcribe and score, both judges
 ./scripts/variance.sh     # optional: reseed the two sampling engines
@@ -83,3 +89,9 @@ literally the same code for all of them.
 * torch reports `sm_120` as its highest arch while the GB10 reports capability
   `(12, 1)`. It runs regardless, via minor-version compatibility.
 * flash-attn has no arm64 wheel, so Qwen runs with `sdpa` attention.
+* Chatterbox needs `setuptools<82` and does not say so. Its watermarker,
+  `resemble-perth`, imports `pkg_resources`, declares no dependencies, and
+  swallows the `ImportError`; the load then dies with
+  `TypeError: 'NoneType' object is not callable`. `python:3.12-slim` ships no
+  setuptools, and setuptools 82+ no longer contains `pkg_resources`. This is
+  independent of the torch pin.
